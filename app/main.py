@@ -134,10 +134,14 @@ def main():
     if sys.argv[1] != "-E":
         exit(1)
 
-    if match_pattern(text, pattern):
-        exit(0)
-    else:
-        exit(1)
+    patterns = [pattern]
+    if pattern.startswith("(") and pattern.endswith(")"):
+        patterns = pattern[1:-1].split("|")
+
+    for pattern in patterns:
+        if match_pattern(text, pattern):
+            exit(0)
+    exit(1)
 
 
 if __name__ == "__main__":
