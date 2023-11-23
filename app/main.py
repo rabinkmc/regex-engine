@@ -28,8 +28,26 @@ def match_character_group(line, group):
     return False
 
 
+def match_negative_character_group(line, group):
+    print(line, group)
+    for c in group:
+        if c in line:
+            return False
+    return True
+
+
+def is_character_group(pattern):
+    return pattern[0] == "[" and pattern[-1] == "]"
+
+
+def is_negative_character_group(pattern):
+    return pattern.startswith("[^") and pattern[-1] == "]"
+
+
 def match_pattern(line: str, pattern: str):
-    if pattern[0] == "[" and pattern[-1] == "]":
+    if is_negative_character_group(pattern):
+        return match_negative_character_group(line, pattern[2:-1])
+    if is_character_group(pattern):
         return match_character_group(line, pattern[1:-1])
     if pattern == "\\w":
         return match_words(line)
