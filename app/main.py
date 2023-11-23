@@ -77,6 +77,11 @@ def parse(regex: str):
 
 def match_pattern(text: str, regex: str):
     i = 0
+    match_at_start = False
+    if regex[0] == "^":
+        regex = regex[1:]
+        match_at_start = True
+
     pattern = parse(regex)
     while i < len(text):
         j = 0
@@ -87,6 +92,9 @@ def match_pattern(text: str, regex: str):
             j += 1
         if j == len(pattern):
             return True
+        if match_at_start:
+            return False
+
         i = i + 1
 
     return False
