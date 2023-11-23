@@ -95,26 +95,24 @@ def match_pattern(text: str, regex: str):
         ):
             i += 1
             j += 1
-        if j == len(pattern) and (not end_flag or (i + 1 == len(text))):
+        if j == len(pattern) and (not end_flag or (i == len(text))):
             return True
 
         if start_flag:
             return False
 
         i = i + 1
-
     return False
 
 
 def main():
     pattern = sys.argv[2]
-    input_line = sys.stdin.read()
+    text = sys.stdin.read().rstrip("\n")
 
     if sys.argv[1] != "-E":
-        print("Expected first argument to be '-E'")
         exit(1)
 
-    if match_pattern(input_line, pattern):
+    if match_pattern(text, pattern):
         exit(0)
     else:
         exit(1)
