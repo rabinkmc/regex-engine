@@ -1,62 +1,95 @@
 import sys
 
-# import pyparsing - available if you need it!
-# import lark - available if you need it!
+
+def match_digit(char: str):
+    return ord("0") <= ord(char) <= ord("9")
 
 
-def match_digit(line):
-    return any(char.isdigit() for char in line)
+def match_alphabets(char: str):
+    is_upper = ord("A") <= ord(char) <= ord("Z")
+    is_lower = ord("a") <= ord(char) <= ord("z")
+    return is_upper or is_lower
 
 
-def match_words(line):
-    for char in line:
-        if ord(char) >= ord("0") and ord(char) <= ord("9"):
+def match_alphanum(char: str):
+    return match_alphabets(char) or match_digit(char) or char == "_"
+
+
+def match_pcg(group: str, char: str):
+    return char in group
+
+
+def match_ncg(group: str, char: str):
+    return char not in group
+
+
+def is_ncgp(pattern):
+    return len(pattern) >= 4 and pattern[0:2] == "[^" and pattern[-1] == "]"
+
+
+def is_pcgp(pattern):
+    return len(pattern) >= 3 and pattern[0] == "[" and pattern[-1] == "]"
+
+
+def is_alphap(pattern):
+    return pattern == "\\w"
+
+
+def is_digitp(pattern):
+    return pattern == "\\d"
+
+
+def match_character(pattern: str, char: str):
+    if is_ncgp(pattern):
+        return match_ncg(pattern, char)
+    if is_pcgp(pattern):
+        return match_pcg(pattern, char)
+    if is_alphap(pattern):
+        return match_alphanum(char)
+    if is_digitp(pattern):
+        return match_digit(char)
+    return pattern == char
+
+
+def parse(regex: str):
+    j = 0
+    pattern = []
+    while j < len(regex):
+        if regex[j : j + 2] == "\\d":
+            j += 2
+            pattern.append("\\d")
+        elif regex[j : j + 2] == "\\w":
+            j += 2
+            pattern.append("\\w")
+        elif regex[j : j + 2] == "[^" and regex.find("]") != -1:
+            end = regex.find("]") + 1
+            pattern.append(regex[j:end])
+            j = end
+        elif regex[j : j + 1] == "[" and regex.find("]") != -1:
+            end = regex.find("]") + 1
+            pattern.append(regex[j:end])
+            j = end
+        else:
+            pattern.append(regex[j])
+            j += 1
+    return pattern
+
+
+def match_pattern(text: str, regex: str):
+    i = 0
+    pattern = parse(regex)
+    while i < len(text):
+        j = 0
+        while (
+            j < len(pattern) and i < len(text) and match_character(pattern[j], text[i])
+        ):
+            i += 1
+            j += 1
+        if j == len(pattern):
             return True
-        if ord(char) >= ord("A") and ord(char) <= ord("Z"):
-            return True
-        if ord(char) >= ord("a") and ord(char) <= ord("z"):
-            return True
-        if char == "_":
-            return True
+        i = i + 1
+
     return False
-
-
-def match_character_group(line, group):
-    for c in group:
-        if c in line:
-            return True
-    return False
-
-
-def match_negative_character_group(line, group):
-    print(line, group)
-    for c in group:
-        if c in line:
-            return False
-    return True
-
-
-def is_character_group(pattern):
-    return pattern[0] == "[" and pattern[-1] == "]"
-
-
-def is_negative_character_group(pattern):
-    return pattern.startswith("[^") and pattern[-1] == "]"
-
-
-def match_pattern(line: str, pattern: str):
-    if is_negative_character_group(pattern):
-        return match_negative_character_group(line, pattern[2:-1])
-    if is_character_group(pattern):
-        return match_character_group(line, pattern[1:-1])
-    if pattern == "\\w":
-        return match_words(line)
-    if pattern == "\\d":
-        return match_digit(line)
-    if len(pattern) == 1:
-        return pattern in line
-    else:
-        raise RuntimeError(f"Unhandled pattern: {pattern}")
 
 
 def main():
@@ -68,6 +101,7 @@ def main():
         exit(1)
 
     if match_pattern(input_line, pattern):
+        print("True")
         exit(0)
     else:
         exit(1)
