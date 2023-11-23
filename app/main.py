@@ -77,10 +77,15 @@ def parse(regex: str):
 
 def match_pattern(text: str, regex: str):
     i = 0
-    match_at_start = False
+    start_flag = False
+    end_flag = False
     if regex[0] == "^":
         regex = regex[1:]
-        match_at_start = True
+        start_flag = True
+
+    if regex[-1] == "$":
+        regex = regex[0:-1]
+        end_flag = True
 
     pattern = parse(regex)
     while i < len(text):
@@ -90,9 +95,10 @@ def match_pattern(text: str, regex: str):
         ):
             i += 1
             j += 1
-        if j == len(pattern):
+        if j == len(pattern) and (not end_flag or (i + 1 == len(text))):
             return True
-        if match_at_start:
+
+        if start_flag:
             return False
 
         i = i + 1
@@ -109,7 +115,6 @@ def main():
         exit(1)
 
     if match_pattern(input_line, pattern):
-        print("True")
         exit(0)
     else:
         exit(1)
