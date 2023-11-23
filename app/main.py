@@ -15,11 +15,11 @@ def match_alphanum(char: str):
     return match_alphabets(char) or match_digit(char) or char == "_"
 
 
-def match_pcg(group: str, char: str):
+def match_pcg(char: str, group: str):
     return char in group
 
 
-def match_ncg(group: str, char: str):
+def match_ncg(char: str, group: str):
     return char not in group
 
 
@@ -39,11 +39,11 @@ def is_digitp(pattern):
     return pattern == "\\d"
 
 
-def match_character(pattern: str, char: str):
+def match_character(char: str, pattern: str):
     if is_ncgp(pattern):
-        return match_ncg(pattern, char)
+        return match_ncg(char, pattern)
     if is_pcgp(pattern):
-        return match_pcg(pattern, char)
+        return match_pcg(char, pattern)
     if is_alphap(pattern):
         return match_alphanum(char)
     if is_digitp(pattern):
@@ -75,34 +75,48 @@ def parse(regex: str):
     return pattern
 
 
-def match_pattern(text: str, regex: str):
-    i = 0
-    start_flag = False
-    end_flag = False
-    if regex[0] == "^":
-        regex = regex[1:]
-        start_flag = True
-
-    if regex[-1] == "$":
-        regex = regex[0:-1]
-        end_flag = True
-
-    pattern = parse(regex)
-    while i < len(text):
-        j = 0
-        while (
-            j < len(pattern) and i < len(text) and match_character(pattern[j], text[i])
-        ):
-            i += 1
-            j += 1
-        if j == len(pattern) and (not end_flag or (i == len(text))):
+def match_pattern(text: str, pattern: str):
+    regex = parse(pattern)
+    if regex and regex[0] == "^":
+        return match_here(text, regex[1:])
+    while text:
+        if match_here(text, regex):
             return True
+        text = text[1:]
 
-        if start_flag:
-            return False
 
-        i = i + 1
+def match_here(text, regex):
+    if not regex:
+        return True
+    if len(regex) == 1 and regex[0] == "$":
+        return not text
+    if len(regex) == 1 and len(text) == 1:
+        return match_character(text[0], regex[0])
+    if len(regex) >= 2 and regex[1] == "+":
+        return match_plus(
+            regex[0],
+            text,
+            regex[2:],
+        )
+    if text and match_character(text[0], regex[0]):
+        return match_here(text[1:], regex[1:])
     return False
+
+
+def match_plus(char, text, regex):
+    if not match_character(text[0], char[0]):
+        return False
+    print(text, regex)
+    while text and char == text[0]:
+        text = text[1:]
+
+    return match_here(text, regex)
+
+
+def match_star(char, text, regex):
+    while text and char == text[0]:
+        text = text[1:]
+    return match_here(text, regex)
 
 
 def main():
