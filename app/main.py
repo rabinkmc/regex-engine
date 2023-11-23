@@ -21,7 +21,16 @@ def match_words(line):
     return False
 
 
+def match_character_group(line, group):
+    for c in group:
+        if c in line:
+            return True
+    return False
+
+
 def match_pattern(line: str, pattern: str):
+    if pattern[0] == "[" and pattern[-1] == "]":
+        return match_character_group(line, pattern[1:-1])
     if pattern == "\\w":
         return match_words(line)
     if pattern == "\\d":
