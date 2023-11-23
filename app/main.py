@@ -48,6 +48,8 @@ def match_character(char: str, pattern: str):
         return match_alphanum(char)
     if is_digitp(pattern):
         return match_digit(char)
+    if pattern == ".":
+        return bool(char)
     return pattern == char
 
 
