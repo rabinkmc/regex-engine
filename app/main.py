@@ -98,6 +98,12 @@ def match_here(text, regex):
             text,
             regex[2:],
         )
+    if len(regex) >= 2 and regex[1] == "?":
+        return match_star(
+            regex[0],
+            text,
+            regex[2:],
+        )
     if text and match_character(text[0], regex[0]):
         return match_here(text[1:], regex[1:])
     return False
@@ -106,16 +112,16 @@ def match_here(text, regex):
 def match_plus(char, text, regex):
     if not match_character(text[0], char[0]):
         return False
-    print(text, regex)
-    while text and char == text[0]:
+    while text and match_character(text[0], char[0]):
         text = text[1:]
 
     return match_here(text, regex)
 
 
 def match_star(char, text, regex):
-    while text and char == text[0]:
+    while text and match_character(text[0], char[0]):
         text = text[1:]
+
     return match_here(text, regex)
 
 
