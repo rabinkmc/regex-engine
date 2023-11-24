@@ -106,6 +106,14 @@ def match_here(text, regex):
             text,
             regex[2:],
         )
+    if len(regex) >= 2 and regex[0] == "(" and ")" in regex:
+        end_index = regex.index(")")
+        or_patterns = [parse(regex) for regex in "".join(regex[1:end_index]).split("|")]
+        after_part = regex[end_index + 1 :]
+        for pattern in or_patterns:
+            if match_here(text, pattern + after_part):
+                return True
+        return False
     if text and match_character(text[0], regex[0]):
         return match_here(text[1:], regex[1:])
     return False
@@ -134,13 +142,8 @@ def main():
     if sys.argv[1] != "-E":
         exit(1)
 
-    patterns = [pattern]
-    if pattern.startswith("(") and pattern.endswith(")"):
-        patterns = pattern[1:-1].split("|")
-
-    for pattern in patterns:
-        if match_pattern(text, pattern):
-            exit(0)
+    if match_pattern(text, pattern):
+        exit(0)
     exit(1)
 
 
